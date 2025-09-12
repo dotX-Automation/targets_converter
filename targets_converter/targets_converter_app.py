@@ -19,6 +19,7 @@ September 12, 2025
 # limitations under the License.
 
 import sys
+import traceback
 
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
@@ -30,10 +31,12 @@ def main(args=None):
     rclpy.init(args=args)
     node = TargetsConverter()
     executor = MultiThreadedExecutor()
+    executor.add_node(node)
     try:
-        rclpy.spin(node, executor)
-    except:
-        pass
+        executor.spin()
+    except Exception as e:
+        print(f"Exception occurred: {e}")
+        traceback.print_exc()
     finally:
         node.destroy_node()
 

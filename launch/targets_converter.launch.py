@@ -28,14 +28,20 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     # Declare launch arguments
+    cov_thr = LaunchConfiguration('cov_threshold', default='0.5')
     it = LaunchConfiguration('in_topic', default='/targets_in')
     nm = LaunchConfiguration('name', default='targets_converter')
     ns = LaunchConfiguration('namespace', default='')
     of = LaunchConfiguration('out_frame', default='map')
+    ort = LaunchConfiguration('orientation', default='true')
     ot = LaunchConfiguration('out_topic', default='/targets_out')
     tf_service = LaunchConfiguration('tf_service', default='/dua_tf_server/transform_pose')
     ust = LaunchConfiguration('use_sim_time', default='false')
     ws = LaunchConfiguration('wait_servers', default='false')
+    cov_thr_launch_arg = DeclareLaunchArgument(
+        'cov_threshold',
+        default_value='0.5'
+    )
     it_launch_arg = DeclareLaunchArgument(
         'in_topic',
         default_value='/targets_in'
@@ -51,6 +57,10 @@ def generate_launch_description():
     of_launch_arg = DeclareLaunchArgument(
         'out_frame',
         default_value='map'
+    )
+    ort_launch_arg = DeclareLaunchArgument(
+        'orientation',
+        default_value='true'
     )
     ot_launch_arg = DeclareLaunchArgument(
         'out_topic',
@@ -68,10 +78,12 @@ def generate_launch_description():
         'wait_servers',
         default_value='false'
     )
+    ld.add_action(cov_thr_launch_arg)
     ld.add_action(it_launch_arg)
     ld.add_action(nm_launch_arg)
     ld.add_action(ns_launch_arg)
     ld.add_action(of_launch_arg)
+    ld.add_action(ort_launch_arg)
     ld.add_action(ot_launch_arg)
     ld.add_action(tf_service_launch_arg)
     ld.add_action(ust_launch_arg)
@@ -89,6 +101,8 @@ def generate_launch_description():
         log_cmd=True,
         parameters=[
             {
+                'cov_threshold': cov_thr,
+                'orientation': ort,
                 'out_frame_id': of,
                 'use_sim_time': ust,
                 'wait_servers': ws

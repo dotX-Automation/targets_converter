@@ -36,7 +36,6 @@ from dua_geometry_interfaces.srv import TransformPose
 class TargetsConverter(NodeBase):
     """Node that converts target information from a given reference frame to another."""
 
-    # _PARAMS_FILE_PATH = "/opt/ros/dua-utils/install/share/targets_converter/targets_converter_params.yaml"
     _PARAMS_FILE_PATH = "/home/neo/workspace/src/targets_converter/targets_converter/targets_converter_params.yaml"
 
     def __init__(self):
@@ -90,24 +89,42 @@ class TargetsConverter(NodeBase):
             det: Detection2D
             out_det = Detection2D()
             out_det.header = det.header
+            src_frame_id = det.header.frame_id
             out_det.header.frame_id = self._out_frame_id
             out_det.bbox = det.bbox
             out_det.id = det.id
             for res in det.results:
                 res: ObjectHypothesisWithPose
+                # Check if pose is valid
+                if res.pose.covariance[0] >= self._cov_threshold:
+                    self.get_logger().warn(
+                        f"Skipping target '{res.hypothesis.class_id}' with invalid covariance from '{src_frame_id}'"
+                    )
+                    continue
+
+                # Convert pose in desired frame
                 out_res = res
                 req = TransformPose.Request()
                 req.source_pose.header = det.header
+                req.source_pose.header.frame_id = src_frame_id
                 req.source_pose.pose = res.pose.pose
                 req.target.stamp = det.header.stamp
                 req.target.frame_id = self._out_frame_id
-                resp: TransformPose.Response = self._transform_pose_cln.call_sync(req)
-                if resp.result.result != CommandResultStamped.SUCCESS:
+                req.timeout.sec = 1
+                self.get_logger().info(f"Transforming pose of '{res.hypothesis.class_id}' '{req.source_pose.header.frame_id}' -> '{self._out_frame_id}'")
+                resp: TransformPose.Response = self._transform_pose_cln.call_sync(req, False, 1.0)
+                if resp is None or resp.result.result != CommandResultStamped.SUCCESS:
                     self.get_logger().error(
-                        f"Error transforming target pose '{det.header.frame_id}' -> '{self._out_frame_id}': {resp.result.error_msg}"
+                        f"Error transforming target pose of '{res.hypothesis.class_id}', '{det.header.frame_id}' -> '{self._out_frame_id}': {resp.result.error_msg if resp is not None else 'no response'}"
                     )
                     continue
                 out_res.pose.pose = resp.target_pose.pose
+                if not self._orientation:
+                    # If orientation data is not required/consistent, reset it to identity
+                    out_res.pose.pose.orientation.w = 1.0
+                    out_res.pose.pose.orientation.x = 0.0
+                    out_res.pose.pose.orientation.y = 0.0
+                    out_res.pose.pose.orientation.z = 0.0
                 out_det.results.append(out_res)
             out_msg.targets.detections.append(out_det)
 
