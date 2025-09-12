@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>targets_converter</name>
+  <version>1.0.0</version>
+  <description>ROS 2 utility to handle mission target information.</description>
+  <maintainer email="info@dotxautomation.com">dotX Automation s.r.l.</maintainer>
+  <license>Apache-2.0</license>
+
+  <depend>dua_common_interfaces</depend>
+  <depend>dua_geometry_interfaces</depend>
+  <depend>dua_mission_interfaces</depend>
+  <depend>dua_node_py</depend>
+  <depend>dua_qos_py</depend>
+  <depend>geometry_msgs</depend>
+  <depend>params_manager_py</depend>
+  <depend>rclpy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>vision_msgs</depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
