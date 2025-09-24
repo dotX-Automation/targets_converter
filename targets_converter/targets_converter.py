@@ -36,7 +36,7 @@ from dua_geometry_interfaces.srv import TransformPose
 class TargetsConverter(NodeBase):
     """Node that converts target information from a given reference frame to another."""
 
-    _PARAMS_FILE_PATH = "/home/neo/workspace/src/targets_converter/targets_converter/targets_converter_params.yaml"
+    _PARAMS_FILE_PATH = "/opt/ros/dua-utils/install/share/targets_converter/targets_converter_params.yaml"
 
     def __init__(self):
         """Constructor."""
