@@ -35,7 +35,7 @@ def generate_launch_description():
     of = LaunchConfiguration('out_frame', default='map')
     ort = LaunchConfiguration('orientation', default='true')
     ot = LaunchConfiguration('out_topic', default='/targets_out')
-    tf_service = LaunchConfiguration('tf_service', default='/dua_tf_server/transform_pose')
+    tf_service = LaunchConfiguration('tf_service', default='/transform_pose')
     ust = LaunchConfiguration('use_sim_time', default='false')
     ws = LaunchConfiguration('wait_servers', default='false')
     cov_thr_launch_arg = DeclareLaunchArgument(
@@ -68,7 +68,7 @@ def generate_launch_description():
     )
     tf_service_launch_arg = DeclareLaunchArgument(
         'tf_service',
-        default_value='/dua_tf_server/transform_pose'
+        default_value='/transform_pose'
     )
     ust_launch_arg = DeclareLaunchArgument(
         'use_sim_time',
@@ -102,10 +102,12 @@ def generate_launch_description():
         parameters=[
             {
                 'cov_threshold': cov_thr,
+                'dua.tf_server.get_transform': False,
+                'dua.tf_server.transform_pose': True,
+                'dua.tf_server.wait_servers': ws,
                 'orientation': ort,
                 'out_frame_id': of,
                 'use_sim_time': ust,
-                'wait_servers': ws
             },
         ],
         remappings={

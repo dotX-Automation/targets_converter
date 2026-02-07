@@ -1,6 +1,11 @@
 /targets_converter:
   ros__parameters:
+    covariance_threshold: 0.5
+    dua:
+      tf_server:
+        get_transform: false
+        transform_pose: true
+        wait_servers: false
     orientation: true
     out_frame_id: map
     use_sim_time: false
-    wait_servers: false

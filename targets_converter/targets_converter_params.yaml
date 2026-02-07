@@ -25,11 +25,3 @@ params:
     constraints: ""
     read_only: false
     var_name: _out_frame_id
-
-  wait_servers:
-    type: bool
-    default_value: false
-    description: "Wait for service servers to come up"
-    constraints: "Cannot be changed"
-    read_only: true
-    var_name: _wait_servers
