@@ -26,12 +26,10 @@ import dua_qos_py.dua_qos_reliable as dua_qos
 from dua_node_py.dua_node import NodeBase
 
 from dua_common_interfaces.msg import CommandResultStamped
-from dua_mission_interfaces.msg import VisualTargets
-from geometry_msgs.msg import PoseWithCovariance, PoseStamped
+from dua_mission_interfaces.msg import Target2D, VisualTargets
+from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Header
-from vision_msgs.msg import Detection2D, ObjectHypothesisWithPose, BoundingBox2D
-
-from dua_geometry_interfaces.srv import TransformPose
+from vision_msgs.msg import BoundingBox2D, ObjectHypothesisWithPose
 
 
 class TargetsConverter(NodeBase):
@@ -72,38 +70,43 @@ class TargetsConverter(NodeBase):
         """Converts and republishes target data."""
         # Prepare output message with invariant information
         out_msg = VisualTargets()
-        out_msg.camera_info = msg.camera_info
-        out_msg.image = msg.image
         out_msg.targets.header = msg.targets.header
+        out_msg.targets.header.frame_id = self._out_frame_id
+        out_msg.targets.camera_info = msg.targets.camera_info
+        out_msg.image = msg.image
 
-        # Process detections data
-        for det in msg.targets.detections:
-            det: Detection2D
-            out_det = Detection2D()
-            out_det.header = det.header
-            src_frame_id = det.header.frame_id
-            out_det.header.frame_id = self._out_frame_id
-            out_det.bbox = det.bbox
-            out_det.id = det.id
-            for res in det.results:
+        # Process detected targets data
+        src_frame_id = msg.targets.header.frame_id
+        src_stamp = msg.targets.header.stamp
+        for tgt in msg.targets.targets:
+            tgt: Target2D
+            out_tgt = Target2D()
+            out_tgt.bbox = tgt.bbox
+            out_tgt.corners = tgt.corners
+            out_tgt.id = tgt.id
+            for res in tgt.results:
                 res: ObjectHypothesisWithPose
                 # Check if pose is valid
                 if res.pose.covariance[0] >= self._cov_threshold:
                     self.get_logger().warn(
-                        f"Skipping target '{res.hypothesis.class_id}' with invalid covariance from '{src_frame_id}'"
+                        f"Skipping target '{res.hypothesis.class_id}' with invalid covariance from '{src_frame_id}'",
+                        throttle_duration_sec=0.5
                     )
                     continue
 
                 # Convert pose in desired frame
                 out_res = res
                 source_pose = PoseStamped()
-                source_pose.header = det.header
+                source_pose.header.stamp = src_stamp
                 source_pose.header.frame_id = src_frame_id
                 source_pose.pose = res.pose.pose
                 target_header = Header()
-                target_header.stamp = det.header.stamp
+                target_header.stamp = src_stamp
                 target_header.frame_id = self._out_frame_id
-                self.get_logger().info(f"Transforming pose of '{res.hypothesis.class_id}': '{source_pose.header.frame_id}' -> '{self._out_frame_id}'")
+                self.get_logger().info(
+                    f"Transforming pose of '{res.hypothesis.class_id}': '{source_pose.header.frame_id}' -> '{self._out_frame_id}'",
+                    throttle_duration_sec=0.5
+                )
                 ret_code, ret_pose = self.transform_pose(source_pose, target_header, 1.0, False, 1.0)
                 if ret_code == CommandResultStamped.TIMEOUT or ret_code == CommandResultStamped.ERROR:
                     continue
@@ -114,8 +117,8 @@ class TargetsConverter(NodeBase):
                     out_res.pose.pose.orientation.x = 0.0
                     out_res.pose.pose.orientation.y = 0.0
                     out_res.pose.pose.orientation.z = 0.0
-                out_det.results.append(out_res)
-            out_msg.targets.detections.append(out_det)
+                out_tgt.results.append(out_res)
+            out_msg.targets.targets.append(out_tgt)
 
         # Publish converted message
         self._out_pub.publish(out_msg)
