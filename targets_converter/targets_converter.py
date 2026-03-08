@@ -95,7 +95,9 @@ class TargetsConverter(NodeBase):
                     continue
 
                 # Convert pose in desired frame
-                out_res = res
+                out_res = ObjectHypothesisWithPose()
+                out_res.hypothesis.class_id = res.hypothesis.class_id
+                out_res.hypothesis.score = res.hypothesis.score
                 source_pose = PoseStamped()
                 source_pose.header.stamp = src_stamp
                 source_pose.header.frame_id = src_frame_id
@@ -111,6 +113,7 @@ class TargetsConverter(NodeBase):
                 if ret_code == CommandResultStamped.TIMEOUT or ret_code == CommandResultStamped.ERROR:
                     continue
                 out_res.pose.pose = ret_pose.pose
+                out_res.pose.covariance = res.pose.covariance
                 if not self._orientation:
                     # If orientation data is not required/consistent, reset it to identity
                     out_res.pose.pose.orientation.w = 1.0
