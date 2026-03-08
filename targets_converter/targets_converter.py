@@ -70,8 +70,8 @@ class TargetsConverter(NodeBase):
         """Converts and republishes target data."""
         # Prepare output message with invariant information
         out_msg = VisualTargets()
-        out_msg.targets.header = msg.targets.header
         out_msg.targets.header.frame_id = self._out_frame_id
+        out_msg.targets.header.stamp = msg.targets.header.stamp
         out_msg.targets.camera_info = msg.targets.camera_info
         out_msg.image = msg.image
 
