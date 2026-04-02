@@ -34,10 +34,13 @@ def main(args=None):
     executor.add_node(node)
     try:
         executor.spin()
+    except KeyboardInterrupt:
+        pass
     except Exception as e:
         print(f"Exception occurred: {e}")
         traceback.print_exc()
     finally:
+        executor.shutdown()
         node.destroy_node()
 
 
