@@ -20,7 +20,11 @@ September 12, 2025
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 import rclpy
+
+from ament_index_python.packages import get_package_share_directory
 
 import dua_qos_py.dua_qos_reliable as dua_qos
 from dua_node_py.dua_node import NodeBase
@@ -35,7 +39,7 @@ from vision_msgs.msg import BoundingBox2D, ObjectHypothesisWithPose
 class TargetsConverter(NodeBase):
     """Node that converts target information from a given reference frame to another."""
 
-    _PARAMS_FILE_PATH = "/opt/ros/dua-utils/install/share/targets_converter/targets_converter_params.yaml"
+    _PARAMS_FILE_PATH = os.path.join(get_package_share_directory('targets_converter'), 'targets_converter_params.yaml')
 
     def __init__(self):
         """Constructor."""
