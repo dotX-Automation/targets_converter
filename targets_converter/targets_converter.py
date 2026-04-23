@@ -71,7 +71,15 @@ class TargetsConverter(NodeBase):
         )
 
     def _in_clbk(self, msg: VisualTargets):
-        """Converts and republishes target data."""
+        """
+        Converts and republishes target data.
+
+        Transforms each target's pose from the source frame into the configured
+        output frame and publishes the result. Targets with invalid covariance or
+        failed transforms are silently skipped.
+
+        :param msg: Incoming visual targets message.
+        """
         # Prepare output message with invariant information
         out_msg = VisualTargets()
         out_msg.targets.header.frame_id = self._out_frame_id
